@@ -6,7 +6,8 @@ const scopes = [
     "user-read-recently-played",
     "user-modify-playback-state",
     "playlist-modify-public",
-    "playlist-modify-private"
+    "playlist-modify-private",
+    "playlist-read-private",
 ].join(",");
 
 const params = {
