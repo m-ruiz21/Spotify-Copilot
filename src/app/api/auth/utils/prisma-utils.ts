@@ -6,9 +6,6 @@ export const getUser = async (id: string) => {
     const user = await prisma.user.findUnique({
         where: {
             id
-        },
-        include: {
-            token: true
         }
     });
 
