@@ -9,9 +9,21 @@ generator client {
 
 model User {
   id                    String   @id 
+  email                 String   @unique
   createdAt             DateTime @default(now())
   lastUpdated           DateTime? @default(now())
+  token                 Token?
   userSongs             UserSong[]
+  @@index ([email])
+}
+
+model Token {
+  id                    Int     @id @default(autoincrement())
+  userId                String  @unique
+  token                 String  
+  refreshToken          String
+  expiresAt             Int 
+  user                  User    @relation(fields: [userId], references: [id])
 }
 
 model UserSong {
