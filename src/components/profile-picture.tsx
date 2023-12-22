@@ -35,7 +35,7 @@ function ProfilePicture() {
     };
     
     return (
-            <div className="relative pr-4">
+            <div className="relative pr-8">
                 <button onClick={handleDropdownToggle} className="cursor-pointer focus:outline-none">
                     { /*eslint-disable-next-line @next/next/no-img-element */}
                     <img src={session?.user?.image!} alt="profile" className="sm:w-14 w-12 h-auto rounded-full" />

@@ -10,7 +10,7 @@ function Navbar() {
             <div className="px-8 cursor-pointer">
                 <a href="/">
                     { /*eslint-disable-next-line @next/next/no-img-element */ }
-                    <img src="/copilot-logo.png" alt="logo" className="sm:w-12 w-10 h-auto"/>
+                    <img src="/copilot-logo.png" alt="logo" className="sm:w-14 w-12 h-auto"/>
                 </a>
             </div>                
 
