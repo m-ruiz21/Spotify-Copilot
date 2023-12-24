@@ -1,15 +1,17 @@
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  extensions        = [pgvector(map: "vector")]
 }
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 model User {
-  id                    String   @id 
-  email                 String   @unique
+  id                    String    @id 
+  email                 String    @unique
   lastUpdated           DateTime? @default(now())
   token                 Token?
   userPlaylists         Playlist[]
@@ -30,7 +32,7 @@ model Song {
   id          String  @id 
   title       String
   artists     Artist[]
-  encoding    String?
+  encoding    Unsupported("vector(1536)")?
   users       User[]
   playlists   Playlist[]
 }
