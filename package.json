@@ -17,6 +17,7 @@
     "@headlessui/react": "^1.7.17",
     "@next-auth/prisma-adapter": "^0.4.4-canary.81",
     "@prisma/client": "^5.7.1",
+    "@supabase/supabase-js": "^2.39.1",
     "fp-ts": "^2.16.1",
     "next": "14.0.4",
     "next-auth": "^4.24.5",

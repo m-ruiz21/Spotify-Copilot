@@ -13,7 +13,7 @@ type SpotifyToken = {
     refresh_token: string
 }
 
-export const refreshAccessToken = async (token: Token) : Promise<Result<Token, ErrorWithCode>> => {
+export async function refreshAccessToken(token: Token) : Promise<Result<Token, ErrorWithCode>> {
     const request = await fetch("https://accounts.spotify.com/api/token", {
         method: "POST",
         headers: {
@@ -44,7 +44,7 @@ export const refreshAccessToken = async (token: Token) : Promise<Result<Token, E
 
 
 export type AuthenticatedUser = User & {token: Token | null};
-export const refreshUserAccess = async (user: AuthenticatedUser) : Promise<Result<AuthenticatedUser, ErrorWithCode>> => { 
+export async function refreshUserAccess(user: AuthenticatedUser) : Promise<Result<AuthenticatedUser, ErrorWithCode>> { 
     const prisma = PrismaClientSingleton.getInstance(); 
 
     if (!user.token) {

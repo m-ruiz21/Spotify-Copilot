@@ -1,5 +1,6 @@
 import PrismaClientSingleton from "@/clients/prisma-client"
 import PlaylistTrackObject = SpotifyApi.PlaylistTrackObject;
+import { Ok } from "@/models/result";
 
 const prisma = PrismaClientSingleton.getInstance();
 export const getOrAddSong = async (song: PlaylistTrackObject) => {
@@ -29,7 +30,7 @@ export const getOrAddSong = async (song: PlaylistTrackObject) => {
     });
 }
 
-const getOrAddArtist = async (artist: SpotifyApi.ArtistObjectSimplified) => {
+export const getOrAddArtist = async (artist: SpotifyApi.ArtistObjectSimplified) => {
     const dbArtist = await prisma.artist.findUnique({
         where: {
             id: artist.id
@@ -45,5 +46,12 @@ const getOrAddArtist = async (artist: SpotifyApi.ArtistObjectSimplified) => {
             id: artist.id,
             name: artist.name
         }
+    });
+}
+
+export const updateLastUpdated = async (userId: string) => {
+    const result = await prisma.user.update({
+        where: { id: userId },
+        data: { lastUpdated: new Date() }
     });
 }

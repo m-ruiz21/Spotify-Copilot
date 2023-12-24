@@ -32,7 +32,7 @@ model Song {
   id          String  @id 
   title       String
   artists     Artist[]
-  encoding    Unsupported("vector(1536)")?
+  embedding   Unsupported("vector(1536)")?
   users       User[]
   playlists   Playlist[]
 }

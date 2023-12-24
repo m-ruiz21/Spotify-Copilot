@@ -1,10 +1,12 @@
 "use server"
 
-import { Token } from '@prisma/client'
+import { Prisma, Token } from '@prisma/client'
 import { AuthenticatedUser, refreshUserAccess } from './auth-utils';
-import { Result, Ok, Err, match } from '@/models/result';
+import { Result, Ok, Err, match, mapAsync } from '@/models/result';
 import { ErrorWithCode } from '@/models/error';
 import { getUser } from '@auth/utils/prisma-utils';
+import { upsertUserProfile } from '@/taste-profile/upsert-taste-profile';
+import { updateLastUpdated } from './prisma-utils';
 
 /**
  * Checks if given token is expired 
@@ -39,10 +41,8 @@ export const getAuthenticatedUser = async (email: string) : Promise<Result<Authe
     }
 
     const newUser = await refreshUserAccess(user);
-    return match(newUser)(
-        (user) => Ok(user),
-        (error) => Err(error)
-    );
+
+    return newUser;
 }
 
 
@@ -50,18 +50,25 @@ export const getAuthenticatedUser = async (email: string) : Promise<Result<Authe
  * Updates / creates user taste profile if necessary
  */
 export const loadUserTasteProfile = async (user: AuthenticatedUser): Promise<Result<boolean, ErrorWithCode>> => {
-    if (!user.lastUpdated) {
-        // create taste profile
-        return Ok(true);
+    let diffInDays = 1000;    // arbitrarily large number
+    if (user.lastUpdated) {
+        const now = new Date();
+        const diffInMilliseconds = now.getTime() - user.lastUpdated.getTime();
+        diffInDays = diffInMilliseconds / (1000 * 3600 * 24);
     }
 
-    const now = new Date();
-    const diffInMilliseconds = now.getTime() - user.lastUpdated.getTime();
-    const diffInDays = diffInMilliseconds / (1000 * 3600 * 24);
 
-    if (diffInDays > 10) {
-        // update taste profile
-        return Ok(true);
+    if (!user.lastUpdated || diffInDays > 10) {
+        const embeddingResult = await upsertUserProfile(user);
+        const result = await mapAsync(
+            embeddingResult,
+            async (embeddingResult) => updateLastUpdated(user.id)
+        );
+
+        return match(result)(
+            (success) => Ok(true), 
+            (error) => Err(error)
+        );
     }
 
     return Ok(true);

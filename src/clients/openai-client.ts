@@ -1,8 +1,10 @@
+"use server"
+
 import { ClientOptions, OpenAI } from 'openai';
 
 const OPEN_AI_KEY = process.env.OPEN_AI_KEY
 
-class OpenAiSingleton {
+export default class OpenAiSingleton {
     private static instance: OpenAI;
 
     private constructor() {}

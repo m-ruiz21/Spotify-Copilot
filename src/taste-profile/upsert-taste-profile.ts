@@ -1,19 +1,23 @@
 "use server"
 
-import { Playlist, Song} from '@prisma/client'
+import { Playlist, Song } from '@prisma/client'
 import { Ok, unwrap, map, mapAsync, isErr } from '@/models/result';
 import { AuthenticatedUser } from '@/utils/auth-utils';
 import PrismaClientSingleton from '@/clients/prisma-client';
+import SupaBaseClientSingleton from '@/clients/supabase-client';
 import PlaylistObjectSimplified = SpotifyApi.PlaylistObjectSimplified;
 import { getAllUserPlaylists, getAllPlaylistTracks } from './utils/spotify-utils';
 import { getOrAddSong } from '@/utils/prisma-utils';
+import { generateEmbeddings, EmbeddedSong } from '@/utils/embeddings-utils';
 
 const prisma = PrismaClientSingleton.getInstance();
+const supabase = SupaBaseClientSingleton.getInstance();
 
 type PlaylistWithSongs = Playlist & { songs: Song[] };
 type ProfileUpdates = { updatedPlaylists: Playlist[], newPlaylists: PlaylistObjectSimplified[], deletedPlaylists: Playlist[] };
 
-const updateUserProfile = async (user: AuthenticatedUser) => {
+
+export const upsertUserProfile = async (user: AuthenticatedUser) => {
     const playlists: PlaylistWithSongs[] = await prisma.playlist.findMany({
         where: { userId: user.id },
         include: { songs: true }
@@ -24,6 +28,22 @@ const updateUserProfile = async (user: AuthenticatedUser) => {
         spotifyPlaylists,
         async (spotifyPlaylists) => getProfileUpdates(spotifyPlaylists, playlists)
     );
+
+    const updatedPlaylistsSongs = await mapAsync(
+        profileUpdates,
+        async (profileUpdates) => getUpdatedSongs(user, profileUpdates)
+    );
+        
+    const songEmbeddings = await mapAsync(
+        updatedPlaylistsSongs,
+        async (updatedPlaylistsSongs) => generateEmbeddings(updatedPlaylistsSongs)
+    );
+        
+    return mapAsync(
+        songEmbeddings,
+        async (songEmbeddings) => insertSongEmbeddings(songEmbeddings)
+    );
+
 }
 
 
@@ -62,15 +82,12 @@ const getProfileUpdates = (
 }
 
 
-const handleProfileUpdates = async (user: AuthenticatedUser, profileUpdates: ProfileUpdates) => {
+const getUpdatedSongs = async (user: AuthenticatedUser, profileUpdates: ProfileUpdates) => {
     const newPlaylistsSongs = await Promise.all(profileUpdates.newPlaylists.map((newPlaylist) => handleNewPlaylist(user, newPlaylist)));
     const updatedPlaylistsSongs = await Promise.all(profileUpdates.updatedPlaylists.map((updatedPlaylist) => handleUpdatedPlaylist(updatedPlaylist)));
     const deletedPlaylistsSongs = await Promise.all(profileUpdates.deletedPlaylists.map((deletedPlaylist) => hanldeDeletedPlaylist(deletedPlaylist)));
 
-    // create set of all song ids
     const songIds = new Set<string>();
-
-    // one loop to iterate thorugh all updated songs
     for (const playlistsSongs of [newPlaylistsSongs, updatedPlaylistsSongs, deletedPlaylistsSongs]) {
         playlistsSongs.forEach(
             (playlistSongs) => map(
@@ -80,8 +97,9 @@ const handleProfileUpdates = async (user: AuthenticatedUser, profileUpdates: Pro
         );
     }
     
-
+    return Array.from(songIds)
 }
+
 
 const handleNewPlaylist = async (user: AuthenticatedUser, newPlaylist: PlaylistObjectSimplified) => {    
     const spotifySongs = await getAllPlaylistTracks(newPlaylist.id); 
@@ -113,6 +131,7 @@ const handleNewPlaylist = async (user: AuthenticatedUser, newPlaylist: PlaylistO
     return Ok(songs.map(song => song.id));
 }
 
+
 const handleUpdatedPlaylist = async (updatedPlaylist: Playlist) => {
     const spotifySongsResult = await getAllPlaylistTracks(updatedPlaylist.id);
     if (isErr(spotifySongsResult)) {
@@ -136,6 +155,7 @@ const handleUpdatedPlaylist = async (updatedPlaylist: Playlist) => {
     return Ok(addedSongs.concat(deletedSongs).filter(song => song) as string[]);
 }
 
+
 const hanldeDeletedPlaylist = async (deletedPlaylist: Playlist) => {
     const songs = await prisma.song.findMany({
         where: { 
@@ -146,4 +166,18 @@ const hanldeDeletedPlaylist = async (deletedPlaylist: Playlist) => {
     await prisma.playlist.delete({ where: { id: deletedPlaylist.id } });
 
     return Ok(songs.map(song => song.id));
+}
+
+
+const insertSongEmbeddings = async (embeddedSongs: EmbeddedSong[]) => {
+    for (const embeddedSong of embeddedSongs) {
+        const { data: existingSong } = await supabase.from('songs')
+                                            .select('id')
+                                            .eq('id', embeddedSong.songId);
+        if (existingSong) {
+            await supabase.from('songs')
+                            .update({ embedding: embeddedSong.embedding })
+                            .eq('id', embeddedSong.songId);
+        }
+    }
 }
