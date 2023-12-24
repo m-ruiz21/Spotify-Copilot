@@ -1,6 +1,9 @@
-import { PrismaClient, Token, User } from '@prisma/client'
+"use server"
+
+import { Token, User } from '@prisma/client'
 import { Result, Ok, Err, mapAsync, map } from '@/models/result';
 import { ErrorWithCode } from '@/models/error'; 
+import PrismaClientSingleton from '@/clients/prisma-client';
 
 type SpotifyToken = {
     access_token: string,
@@ -42,7 +45,7 @@ export const refreshAccessToken = async (token: Token) : Promise<Result<Token, E
 
 export type AuthenticatedUser = User & {token: Token | null};
 export const refreshUserAccess = async (user: AuthenticatedUser) : Promise<Result<AuthenticatedUser, ErrorWithCode>> => { 
-    const prisma = new PrismaClient();
+    const prisma = PrismaClientSingleton.getInstance(); 
 
     if (!user.token) {
         return Err({status: 401, message: "User is not authenticated"});

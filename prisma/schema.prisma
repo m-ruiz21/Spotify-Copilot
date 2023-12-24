@@ -10,10 +10,10 @@ generator client {
 model User {
   id                    String   @id 
   email                 String   @unique
-  createdAt             DateTime @default(now())
   lastUpdated           DateTime? @default(now())
   token                 Token?
-  userSongs             UserSong[]
+  userPlaylists         Playlist[]
+  songs                 Song[]
   @@index ([email])
 }
 
@@ -26,18 +26,27 @@ model Token {
   user                  User    @relation(fields: [userId], references: [id])
 }
 
-model UserSong {
-  id         Int      @id 
-  userId     String 
-  songId     String 
-  user       User     @relation(fields: [userId], references: [id])
-  song       Song     @relation(fields: [songId], references: [id])
-}
-
 model Song {
   id          String  @id 
   title       String
-  artist      String
-  encoding    String 
-  users       UserSong[]
+  artists     Artist[]
+  encoding    String?
+  users       User[]
+  playlists   Playlist[]
+}
+
+model Playlist {
+  id          String  @id 
+  name        String
+  description String?
+  songs       Song[]
+  user        User    @relation(fields: [userId], references: [id])
+  userId      String
+  snapshotId  String
+}
+
+model Artist {
+  id          String  @id 
+  name        String
+  songs       Song[]
 }

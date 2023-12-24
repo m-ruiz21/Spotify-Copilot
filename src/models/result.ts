@@ -1,4 +1,5 @@
 import { Either, left, right, isLeft, isRight, getOrElse, Right, Left } from 'fp-ts/lib/Either';
+import { ErrorWithCode } from './error';
 
 type Err<E> = Either<E, never>; 
 type Ok<T> = Either<never, T>; 
@@ -11,9 +12,17 @@ export type Result<T, E> = Either<E, T>
 export const isErr = <T, E>(result: Result<T, E>): result is Left<E> => isLeft(result); 
 export const isOk = <T, E>(result: Result<T, E>): result is Right<T> => isRight(result);
 
-export const map = <T, E, R>(result: Result<T, E>, f: (value: T) => R): Result<R, E> => {
+export const map = <T, E, R>(result: Result<T, E>, f: (value: T) => R): Result<R, E | ErrorWithCode> => {
     if (isOk(result)) {
-        return Ok(f(result.right));
+        try {
+            return Ok(f(result.right));
+        } catch (error) {
+            if (error instanceof Error) {
+                return Err<ErrorWithCode>({message: error.message, status: 500});
+            }
+            
+            return Err<ErrorWithCode>({message: "Unknown Error Occured", status: 500});
+        }
     } else {
         return result; 
     }

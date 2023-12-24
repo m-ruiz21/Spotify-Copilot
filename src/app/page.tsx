@@ -5,6 +5,8 @@ import Navbar from '@/components/navbar'
 import MessageBar from '@/components/messagebar'
 
 export default function Home() {
+  
+
   const [message, setMessage] = useState('');
 
   return (

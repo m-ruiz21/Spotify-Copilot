@@ -1,11 +1,14 @@
-import { PrismaClient } from '@prisma/client';
 import { User } from '@prisma/client';
+import PrismaClientSingleton from '@/clients/prisma-client';
 
-const prisma = new PrismaClient();
+const prisma = PrismaClientSingleton.getInstance(); 
 export const getUser = async (id: string) => {
     const user = await prisma.user.findUnique({
         where: {
             id
+        }, 
+        include: {
+            token: true
         }
     });
 

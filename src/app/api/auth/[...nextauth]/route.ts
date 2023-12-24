@@ -20,10 +20,8 @@ const handler = NextAuth({
             if (!dbUser) {       
                 createUser({
                     id: user?.id as string,
-                    email: user?.email as string,
-                    
-                    createdAt: new Date(),
-                    lastUpdated: new Date()
+                    email: user?.email as string, 
+                    lastUpdated: null,
                 })
             }
 

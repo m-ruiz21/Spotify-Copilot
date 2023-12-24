@@ -3,9 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "start:next": "next start",
+    "build:next": "next build",
+    "start:eel": "python3 init.py --develop",
+    "build:eel": "python3 -m eel init.py build --onefile --noconsole --name spotify-copilot",
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "clean:build": "rm -rf build && rm -rf dist",
+    "build": "npm-run-all clean:build build:*",
+    "start": "npm-run-all -p start:*",
     "lint": "next lint"
   },
   "dependencies": {
@@ -27,6 +32,7 @@
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.4",
+    "npm-run-all": "^4.1.5",
     "postcss": "^8",
     "prisma": "^5.7.1",
     "tailwindcss": "^3.3.0",
