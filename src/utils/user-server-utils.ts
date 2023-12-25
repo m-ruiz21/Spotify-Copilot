@@ -7,6 +7,7 @@ import { ErrorWithCode } from '@/models/error';
 import { getUser } from '@auth/utils/prisma-utils';
 import { upsertUserProfile } from '@/taste-profile/upsert-taste-profile';
 import { updateLastUpdated } from './prisma-utils';
+import { Session } from '@supabase/supabase-js';
 
 /**
  * Checks if given token is expired 

@@ -3,14 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start:next": "next start",
-    "build:next": "next build",
-    "start:eel": "python3 init.py --develop",
-    "build:eel": "python3 -m eel init.py build --onefile --noconsole --name spotify-copilot",
     "dev": "next dev",
-    "clean:build": "rm -rf build && rm -rf dist",
-    "build": "npm-run-all clean:build build:*",
-    "start": "npm-run-all -p start:*",
+    "build": "next build",
+    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {

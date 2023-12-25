@@ -1,0 +1,21 @@
+@keyframes bounce {
+    0%, 80%, 100% { 
+        transform: scale(0);
+        background-color: white;
+    } 40% { 
+        transform: scale(1.0);
+        background-color: #1db954;
+    }
+}
+
+.bounce {
+    animation: bounce 1.4s infinite both;
+}
+
+.dot1 {
+    animation-delay: -0.32s;
+}
+
+.dot2 {
+    animation-delay: -0.16s;
+}

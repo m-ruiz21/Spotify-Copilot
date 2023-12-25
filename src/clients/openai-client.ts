@@ -1,5 +1,3 @@
-"use server"
-
 import { ClientOptions, OpenAI } from 'openai';
 
 const OPEN_AI_KEY = process.env.OPEN_AI_KEY

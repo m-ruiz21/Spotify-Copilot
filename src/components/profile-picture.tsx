@@ -1,4 +1,4 @@
-import { getAuthenticatedUser } from "@/utils/user-utils";
+import { getAuthenticatedUser } from "@/utils/user-server-utils";
 import { AuthenticatedUser } from "@/utils/auth-utils";
 import { Transition } from "@headlessui/react";
 import { signOut, useSession } from "next-auth/react";
@@ -8,24 +8,6 @@ import { Token } from "@prisma/client";
 
 function ProfilePicture() {
     const { data: session } = useSession();
-    const [user, setUser] = useState<AuthenticatedUser | undefined>(undefined);
-
-    useEffect(() => {
-        const fetchUserToken = async () => {
-            if (session?.user?.email) {
-                const retrievedUserToken = await getAuthenticatedUser(session.user.email);
-                if (isOk(retrievedUserToken)) {
-                    setUser(unwrap(retrievedUserToken));
-                }
-                else {
-                    // TODO: do actual error handling
-                    console.log(retrievedUserToken.left);
-                }
-            }
-        };
-
-        fetchUserToken();
-    }, [session]);
 
     // dropdown logic
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);

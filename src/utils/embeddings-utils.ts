@@ -20,7 +20,6 @@ async function generatePlaylistString(songId: string) {
         }
     });
 
-    // concatenate all playlist names and descriptions
     const playlistStrings = playlists.map((playlist) => playlist.name + ': ' + playlist.description);
     const playlistString = playlistStrings.join(', ');
 
